@@ -12,3 +12,8 @@ Cartes disponibles (topojson) :
 	world-10m.json 
 	world-50m.json 
 	world-110m.json 
+
+Fonction Map Displayed appelée lorsque la carte est affichée : 
+
+	Réunir les territoires disputés (par id) : 
+		merge_subunits([[732,504],[250,724]]);
