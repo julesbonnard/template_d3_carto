@@ -17,3 +17,8 @@ Fonction Map Displayed appelée lorsque la carte est affichée :
 
 	Réunir les territoires disputés (par id) : 
 		merge_subunits([[732,504],[250,724]]);
+
+Tip : Use SVG Crow Bar to save in SVG
+
+TODO : 
+choroplèthe et cartogramme
