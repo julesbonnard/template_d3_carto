@@ -24,7 +24,7 @@ d3.json(topojson_url, function(error, topojson_object) {
 		.data(topojson.feature(topojson_object, topojson_object.objects.subunits).features)
 		.enter().append("path")
 		.attr("class", function(d) {
-			return "subunit " + d.properties.name;
+			return "subunit " + d.id;
 		})
 		.attr("d", path);
 
