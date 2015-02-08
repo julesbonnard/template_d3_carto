@@ -4,19 +4,23 @@
 <head>
     <link rel="stylesheet" type="text/css" href="style.css">
     <style>
-    #map_container {
-        width: 1000px;
+    #map1 {
+    	float:left;
+        width: 500px;
         height: 500px;
-        border: 1px solid black;
+    }
+    #map2 {
+    	float: left;
+        width: 500px;
+        height: 500px;
     }
     </style>
 </head>
 
 <body>
 
-    <div id="map_container">
-        <div id="map"></div>
-    </div>
+    <div id="map1"></div>
+    <div id="map2"></div>
 
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/queue.v1.min.js"></script>
@@ -24,13 +28,15 @@
     <script src="lib/d3.geo.projection.min.js"></script>
     <script src="script.js"></script>
     <script>
-    var map1 = new easyMap('#map');
-    map1.detectSize();
-
+    var map1 = new easyMap('#map1');
     map1.projection = d3.geo.kavrayskiy7()
-        .scale(200);
+        			.scale(200);
 
     map1.draw();
+
+    var map2 = new easyMap('#map2');
+
+    map2.draw();
 
     </script>
     
