@@ -1,56 +1,76 @@
+var easyMap = function(cssSelector,urlTopojson) {
+	//On déplace la projection au milieu
+	this.projection = this.projection.translate([this.size/2,this.height/2]);
+	//Modification du css Selector
+	if(cssSelector !== undefined)
+		this.cssSelector = cssSelector;
+	//Modification de l'url Topojson
+	if(urlTopojson !== undefined)
+		this.urlTopojson = urlTopojson;
+};
+//Initialisation d'une taille standard
+easyMap.prototype.size = {
+	width: 400,
+	height: 400
+};
 //On détecte la taille du div
-var width = document.getElementById('map').offsetWidth,
-	height = document.getElementById('map').offsetHeight;
-
-//On déplace la projection au milieu
-var projection = projection.translate([width / 2, height / 2]);
-
-//On crée un svg de la taille du div
-var svg = d3.select("#map").append("svg")
-	.attr("width", width)
-	.attr("height", height);
-
-var path = d3.geo.path()
-	.projection(projection);
-
-var topojson_object_saved; //Garde en mémoire le fichier pour lecture ultérieure
-
-d3.json(topojson_url, function(error, topojson_object) {
-	if (error) return console.error(error);
-	console.log(topojson_object);
-
-	topojson_object_saved = topojson_object;
-
-	var subunits = topojson.feature(topojson_object, topojson_object.objects.subunits); //Reconvertir vers GeoJson
-
-	//Création des éléments
-	svg.selectAll(".subunit")
-		.data(topojson.feature(topojson_object, topojson_object.objects.subunits).features)
-		.enter().append("path")
-		.attr("class", function(d) {
-			return "subunit " + d.id;
-		})
-		.attr("d", path);
-
-	//Création des bordures
-	svg.append("path")
-		.datum(topojson.mesh(topojson_object, topojson_object.objects.subunits, function(a, b) {
-			return a !== b;
-		}))
-		.attr("d", path)
-		.attr("class", "subunit-boundary");
-
-	map_displayed();
-});
-
-//Permet de joindre deux territoires collés
-function add_merged_subunit(ids) {
-	var selected = d3.set(ids);  //Must be an array
-	svg.append("path")
-      .datum(topojson.merge(topojson_object_saved, topojson_object_saved.objects.subunits.geometries.filter(function(d) { return selected.has(d.id); })))
-      .attr("class", "subunit merged")
-      .attr("d", path);
+easyMap.prototype.detectSize = function() {
+	this.size.width = d3.select(this.cssSelector).offsetWidth;
+	this.size.height = d3.select(this.cssSelector).offsetHeight;
 }
-function merge_subunits(ids) {
-	ids.forEach(add_merged_subunit); //Must be arrays in array
+//Initialisation d'une projection standard
+easyMap.prototype.projection = d3.geo.mercator();
+	
+//Initialisation du sélecteur du div par défaut
+easyMap.prototype.cssSelector = '#map';
+
+//Initialisation du topojson par défaut	
+easyMap.prototype.urlTopojson = 'data/world-110m.json';
+
+//Rendu de la map
+easyMap.prototype.draw = function() {
+	console.log(this.svg)
+	//Initialisation du path
+	var path = d3.geo.path().projection(this.projection);
+
+	function ready(error,topojsonObject) {
+		//Ajout d'un svg de la taille indiquée
+		var svg = d3.select(this.cssSelector).append('svg')
+				.attr('width',this.size.width)
+				.attr('height',this.size.height);
+		//Convertir vers GeoJson
+		var subunits = topojson.feature(topojsonObject,topojsonObject.objects.subunits);
+		//Création des éléments
+		svg = selectAll('.subunit')
+					.data(topojson.feature(topojsonObject,topojsonObject.objects.subunits).features)
+					.enter().append("path")
+					.attr("class",function(d) {
+						return "subunit " + d.id;
+					})
+					.attr("d",path);
+
+		svg.append('path')
+				.datum(topojson.mesh(topojsonObject,topojsonObject.objects.subunits,function(a,b) {
+					return a !== b;
+				}))
+				.attr('d',path)
+				.attr('class','subunit-boundary');
+	}
+
+	//Charger le topojson
+	queue()
+	.defer(d3.json,this.urlTopojson)
+	.await(ready);
 }
+
+// //Permet de joindre deux territoires collés
+// function add_merged_subunit(ids) {
+// 	var selected = d3.set(ids);  //Must be an array
+// 	svg.append("path")
+//       .datum(topojson.merge(topojson_object_saved, topojson_object_saved.objects.subunits.geometries.filter(function(d) { return selected.has(d.id); })))
+//       .attr("class", "subunit merged")
+//       .attr("d", path);
+// }
+// function merge_subunits(ids) {
+// 	ids.forEach(add_merged_subunit); //Must be arrays in array
+// }

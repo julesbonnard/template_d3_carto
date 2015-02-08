@@ -19,19 +19,25 @@
     </div>
 
     <script src="lib/d3.v3.min.js"></script>
+    <script src="lib/queue.v1.min.js"></script>
     <script src="lib/topojson.v1.min.js"></script>
     <script src="lib/d3.geo.projection.min.js"></script>
-    <script>
-    var topojson_url = "data/world-110m.json";
-
-    var projection = d3.geo.kavrayskiy7()
-        .scale(200);
-    </script>
     <script src="script.js"></script>
     <script>
-    function map_displayed() {
-    	merge_subunits([[732,504]]);
-    }
+    var map1 = new easyMap('#map');
+    map1.detectSize();
+
+    map1.projection = d3.geo.kavrayskiy7()
+        .scale(200);
+
+    map1.draw();
+
+    </script>
+    
+    <script>
+    // function map_displayed() {
+    // 	merge_subunits([[732,504]]);
+    // }
     </script>
 </body>
 </html>
