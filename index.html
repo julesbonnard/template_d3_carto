@@ -5,9 +5,14 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <style>
     #map1 {
-    	float:left;
-        width: 1000px;
+        width: 100%;
         height: 500px;
+    }
+    .subunit.subunit76 {
+        fill: red;
+    }
+    .subunit.subunit562 {
+        fill: green;
     }
     </style>
 </head>
@@ -23,9 +28,8 @@
     <script src="script.js"></script>
     <script>
     var map1 = new easyMap('#map1');
-    map1.projection = d3.geo.kavrayskiy7()
-        			.scale(200);
-    map1.addMergedSubunits([732,504]);
+    map1.projection = d3.geo.kavrayskiy7();
+    map1.addMergedSubunits([504,732]);
     map1.draw();
 
     </script>

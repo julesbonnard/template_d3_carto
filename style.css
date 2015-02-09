@@ -13,12 +13,3 @@
   stroke-dasharray: 2,2;
   stroke-linejoin: round;
 }
-
-.placeHolder {
-	position: relative;
-	top: 50%;
-	left: 50%;
-}
-.subunit.subunit76 {
-	fill: red;
-}
