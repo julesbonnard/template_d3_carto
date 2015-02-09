@@ -8,10 +8,14 @@ var easyMap = function(cssSelector,urlTopojson) {
 
 	this.detectSize();
 
+	//Initialisation du SVG
 	this.svg = d3.select(this.cssSelector).append('svg')
 			.attr('width',this.size.width)
 			.attr('height',this.size.height);
 };
+
+//Définition du prototype de base
+
 //Initialisation d'une taille standard
 easyMap.prototype.size = {
 	width: 400,
@@ -32,24 +36,46 @@ easyMap.prototype.cssSelector = '#map';
 //Initialisation du topojson par défaut	
 easyMap.prototype.urlTopojson = 'data/world-110m.json';
 
+//Initialisation du tableau pour rassembler deux zones
+easyMap.prototype.mergedSubUnits = [];
+easyMap.prototype.addMergedSubunits = function(array) {
+	this.mergedSubUnits.push(array);
+}
+
 //Rendu de la map
 easyMap.prototype.draw = function() {
 	var svg = this.svg;
+	var mergedSubUnits = this.mergedSubUnits;
+
 	//Initialisation du path
 	var path = d3.geo.path()
 			.projection(this.projection);
 
-	function ready(error,topojsonObject) {
-		//Création des éléments
-		svg = svg.selectAll('.subunit')
-					.data(topojson.feature(topojsonObject,topojsonObject.objects.subunits).features)
-					.enter().append("path")
-					.attr("class",function(d) {
-						return "subunit " + d.id;
-					})
-					.attr("d",path);
+	var topojsonObject;
 
-		svg.append('path')
+	//Une fois les fichiers chargés
+	function ready(error,result) {
+		topojsonObject = result;
+
+		createSubUnits();
+		createBoundaries();
+
+		if(mergedSubUnits.length>0)
+			mergeSubUnits();
+	}
+
+	function createSubUnits() {
+		svg.selectAll('.subunit')
+			.data(topojson.feature(topojsonObject,topojsonObject.objects.subunits).features)
+			.enter().append("path")
+			.attr("class",function(d) {
+				return "subunit subunit" + d.id;
+			})
+			.attr("d",path);
+	}
+
+	function createBoundaries() {
+			svg.append('path')
 				.datum(topojson.mesh(topojsonObject,topojsonObject.objects.subunits,function(a,b) {
 					return a !== b;
 				}))
@@ -57,20 +83,24 @@ easyMap.prototype.draw = function() {
 				.attr('class','subunit-boundary');
 	}
 
+	function mergeSubUnits() {
+		mergedSubUnits.forEach(function(d) {
+			var selected = d3.set(d);
+			svg.append("path")
+			.datum(topojson.merge(topojsonObject, topojsonObject.objects.subunits.geometries.filter(function(a) { return selected.has(a.id); })))
+			.attr("class", function(a) {
+				var classIds = "";
+				d.forEach(function(b) {
+					classIds = classIds + "subunit"+b+" ";
+				});
+				return "subunit merged"+classIds;
+			})
+			.attr("d", path);
+		});
+	}
+
 	//Charger le topojson
 	queue()
 	.defer(d3.json,this.urlTopojson)
 	.await(ready);
 }
-
-// //Permet de joindre deux territoires collés
-// function add_merged_subunit(ids) {
-// 	var selected = d3.set(ids);  //Must be an array
-// 	svg.append("path")
-//       .datum(topojson.merge(topojson_object_saved, topojson_object_saved.objects.subunits.geometries.filter(function(d) { return selected.has(d.id); })))
-//       .attr("class", "subunit merged")
-//       .attr("d", path);
-// }
-// function merge_subunits(ids) {
-// 	ids.forEach(add_merged_subunit); //Must be arrays in array
-// }

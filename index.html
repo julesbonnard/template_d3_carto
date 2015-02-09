@@ -6,12 +6,7 @@
     <style>
     #map1 {
     	float:left;
-        width: 500px;
-        height: 500px;
-    }
-    #map2 {
-    	float: left;
-        width: 500px;
+        width: 1000px;
         height: 500px;
     }
     </style>
@@ -20,7 +15,6 @@
 <body>
 
     <div id="map1"></div>
-    <div id="map2"></div>
 
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/queue.v1.min.js"></script>
@@ -31,19 +25,9 @@
     var map1 = new easyMap('#map1');
     map1.projection = d3.geo.kavrayskiy7()
         			.scale(200);
-
+    map1.addMergedSubunits([732,504]);
     map1.draw();
 
-    var map2 = new easyMap('#map2');
-
-    map2.draw();
-
-    </script>
-    
-    <script>
-    // function map_displayed() {
-    // 	merge_subunits([[732,504]]);
-    // }
     </script>
 </body>
 </html>
