@@ -2,16 +2,21 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	this.cssSelector = cssSelector || '#map';
 	this.urlTopojson = urlTopojson || 'data/world-110m.json';
 	this.projection = projection || d3.geo.mercator();
-	this.urlNames = urlNames || 'data/world-110m-country-names.tsv';
+	this.urlNames = urlNames || 'data/world-110m-data.tsv';
+	this.property = 'prcent_total_youth';
 	
 	var container = d3.select(this.cssSelector),
 		svg,
 		that = this,
 		path,
-		names = d3.map();
+		data = d3.map();
 
 	this.mapRatio = 0.4,
 	this.scale = 0.1;
+
+	var quantize = d3.scale.quantize()
+	    .domain([0, 100])
+	    .range(d3.range(9).map(function(i) { return "q" + i; }));
 
 	this.width = function() {
 		return parseInt(container.style('width'));
@@ -36,7 +41,8 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	}
 
 	function formatHover(id) {
-		return names.get(id)+" ("+id+")";
+		if(data.get(id) !== undefined)
+			return data.get(id).name+" ("+id+") : "+data.get(id)[that.property];
 	}
 
 	function createSubUnits(listSubUnits) {
@@ -44,10 +50,15 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 			.data(listSubUnits)
 			.enter().append("path")
 			.attr("class",function(d) {
-				return "subunit subunit" + d.id;
+				var dataClass = "subunit subunit" + d.id;
+				if(data.get(d.id)!==undefined)
+					dataClass = dataClass + " " +quantize(data.get(d.id)[that.property]);
+				
+				return dataClass;
 			})
 			.attr("title",function(d) {
-				return names.get(d.id);
+				if(data.get(d.id) !== undefined)
+					return data.get(d.id);
 			})
 			.attr("d",path)
 			.on('mouseover',function(d) {
@@ -80,7 +91,7 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	}
 
 
-	this.draw = function(error,topojsonLoaded,namesLoaded) {
+	this.draw = function(error,topojsonLoaded,data) {
 		svg = container.append('svg')
 			.attr('width',this.width())
 			.attr('height',this.height());
@@ -96,9 +107,9 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	this.load = function() {
 		queue()
 			.defer(d3.json,this.urlTopojson)
-			.defer(d3.tsv,this.urlNames, function(d) { names.set(d.id, d.name); })
-			.await(function(error,topology,names) {
-				that.draw(error,topology,names);
+			.defer(d3.tsv,this.urlNames, function(d) { data.set(d.id, d); })
+			.await(function(error,topology,data) {
+				that.draw(error,topology,data);
 			});
 	}
 
@@ -112,5 +123,5 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	    container.selectAll('.subunit').attr('d', path);
 	    container.selectAll('.subunit-boundary').attr('d', path);
 	}
-	d3.select(window).on('resize', this.resize);
+	window.addEventListener('resize', that.resize, false);
 };

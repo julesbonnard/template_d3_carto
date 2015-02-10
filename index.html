@@ -5,15 +5,14 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <style>
     #map1 {
-        width: 100%;
+        float: left;
+        width: 50%;
         height: 100%;
-        border: 1px solid black;
     }
-    .subunit.subunit76 {
-        fill: red;
-    }
-    .subunit.subunit562 {
-        fill: green;
+    #map2 {
+        float: left;
+        width: 50%;
+        height: 100%;
     }
     </style>
 </head>
@@ -21,6 +20,7 @@
 <body>
 
     <div id="map1"></div>
+    <div id="map2"></div>
 
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/queue.v1.min.js"></script>
@@ -28,9 +28,15 @@
     <script src="lib/d3.geo.projection.min.js"></script>
     <script src="script.js"></script>
     <script>
-    var map1 = new easyMap('#map1');
+    var map1 = new easyMap('#map1',d3.geo.kavrayskiy7());
     map1.addMergedSubunits([504,732]);
+    map1.addMergedSubunits([706,-99]);
     map1.load();
+
+    var map2 = new easyMap('#map2',d3.geo.azimuthalEqualArea());
+    map2.addMergedSubunits([504,732]);
+    map2.addMergedSubunits([706,-99]);
+    map2.load();
 
     </script>
 </body>
