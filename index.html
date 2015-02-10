@@ -6,7 +6,8 @@
     <style>
     #map1 {
         width: 100%;
-        height: 500px;
+        height: 100%;
+        border: 1px solid black;
     }
     .subunit.subunit76 {
         fill: red;
@@ -28,9 +29,8 @@
     <script src="script.js"></script>
     <script>
     var map1 = new easyMap('#map1');
-    map1.projection = d3.geo.kavrayskiy7();
     map1.addMergedSubunits([504,732]);
-    map1.draw();
+    map1.load();
 
     </script>
 </body>

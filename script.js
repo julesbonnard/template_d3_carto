@@ -1,71 +1,46 @@
-var easyMap = function(cssSelector,urlTopojson) {
-	//Modification du css Selector
-	if(cssSelector !== undefined)
-		this.cssSelector = cssSelector;
-	//Modification de l'url Topojson
-	if(urlTopojson !== undefined)
-		this.urlTopojson = urlTopojson;
-
-	this.detectSize();
-
-	//Initialisation du SVG
-	this.svg = d3.select(this.cssSelector).append('svg')
-			.attr('width',this.size.width)
-			.attr('height',this.size.height);
-
-	d3.select(window).on('resize', this.resize);
-};
-
-//Définition du prototype de base
-
-//Initialisation d'une taille standard
-easyMap.prototype.size = {
-	width: 400,
-	height: 400,
-	mapRatio: 0.5
-};
-//On détecte la taille du div
-easyMap.prototype.detectSize = function() {
-	this.size.width = d3.select(this.cssSelector).node().getBoundingClientRect().width;
-	this.size.height = this.size.width*this.size.mapRatio;
-}
-
-//Initialisation d'une projection standard
-easyMap.prototype.projection = d3.geo.mercator();
+var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
+	this.cssSelector = cssSelector || '#map';
+	this.urlTopojson = urlTopojson || 'data/world-110m.json';
+	this.projection = projection || d3.geo.mercator();
+	this.urlNames = urlNames || 'data/world-110m-country-names.tsv';
 	
-//Initialisation du sélecteur du div par défaut
-easyMap.prototype.cssSelector = '#map';
+	var container = d3.select(this.cssSelector),
+		svg,
+		that = this,
+		path;
 
-//Initialisation du topojson par défaut	
-easyMap.prototype.urlTopojson = 'data/world-110m.json';
+	this.mapRatio = 0.4,
+	this.scale = 0.1;
 
-//Initialisation du tableau pour rassembler deux zones
-easyMap.prototype.mergedSubUnits = [];
-easyMap.prototype.addMergedSubunits = function(array) {
-	this.mergedSubUnits.push(array);
-}
+	this.width = function() {
+		return parseInt(container.style('width'));
+	}
 
-//Fichier de noms par défaut
-easyMap.prototype.urlNames = 'data/world-110m-country-names.tsv';
+	this.height = function() {
+		var svgHeight = parseInt(container.select('svg').style('height'));
+		var normalHeight = this.width()*this.mapRatio;
+		if(svgHeight>=normalHeight) {
+			return svgHeight;
+		}
+		else {
+			return normalHeight;
+		}
+	}
 
-//Rendu de la map
-easyMap.prototype.draw = function() {
-	var svg = this.svg;
-	var mergedSubUnits = this.mergedSubUnits;
+	this.changeProjection = function(projection) {
+		path = d3.geo.path()
+			.projection(projection);
+	}
+	this.changeProjection(this.projection);
+
 	var names = d3.map();
 
-	var projection = this.projection.scale(this.size.width).translate([this.size.width / 2, this.size.height / 2]);
-	//Initialisation du path
-	var path = d3.geo.path()
-			.projection(this.projection);
+	function convertToGeoJson(topojsonObject) {
+		return topojson.feature(topojsonObject,topojsonObject.objects.subunits).features;
+	}
 
-	var topojsonObject;
-
-	//Une fois les fichiers chargés
-	function ready(error,topojsonLoaded,namesLoaded) {
-		topojsonObject = topojsonLoaded;
-		createSubUnits(mergeSubUnits());
-		createBoundaries();
+	function formatHover(id) {
+		return names.get(id)+" ("+id+")";
 	}
 
 	function createSubUnits(listSubUnits) {
@@ -84,18 +59,22 @@ easyMap.prototype.draw = function() {
 			});
 	}
 
-	function createBoundaries() {
-			svg.append('path')
-				.datum(topojson.mesh(topojsonObject,topojsonObject.objects.subunits,function(a,b) {
-					return a !== b;
-				}))
-				.attr('d',path)
-				.attr('class','subunit-boundary');
+	function createBoundaries(topojsonObject) {
+		svg.append('path')
+			.datum(topojson.mesh(topojsonObject,topojsonObject.objects.subunits,function(a,b) {
+				return a !== b;
+			}))
+			.attr('d',path)
+			.attr('class','subunit-boundary');
 	}
 
-	function mergeSubUnits() {
+	this.mergedSubUnits = [];
+	this.addMergedSubunits = function(array) {
+		this.mergedSubUnits.push(array);
+	}
+	function mergeSubUnits(topojsonObject) {
 		var listSubUnits = topojson.feature(topojsonObject,topojsonObject.objects.subunits).features;
-		mergedSubUnits.forEach(function(d) {
+		that.mergedSubUnits.forEach(function(d) {
 			var merged = d3.set(d);
 			var newSubUnit = topojson.merge(topojsonObject, topojsonObject.objects.subunits.geometries.filter(function(a) { return merged.has(a.id); }));
 			newSubUnit.id = d[0];
@@ -104,33 +83,38 @@ easyMap.prototype.draw = function() {
 		return listSubUnits;
 	}
 
-	function formatHover(id) {
-		return names.get(id)+" ("+id+")";
+
+	this.draw = function(error,topojsonLoaded,namesLoaded) {
+		svg = container.append('svg')
+			.attr('width',this.width())
+			.attr('height',this.height());
+
+		this.resize();
+
+		createSubUnits(mergeSubUnits(topojsonLoaded));
+		createBoundaries(topojsonLoaded);
+
+		this.resize();
 	}
 
-	//Charger le topojson
-	queue()
-	.defer(d3.json,this.urlTopojson)
-	.defer(d3.tsv,this.urlNames, function(d) { names.set(d.id, d.name); })
-	.await(ready);
-}
+	this.load = function() {
+		queue()
+			.defer(d3.json,this.urlTopojson)
+			.defer(d3.tsv,this.urlNames, function(d) { names.set(d.id, d.name); })
+			.await(function(error,topology,names) {
+				that.draw(error,topology,names);
+			});
+	}
 
-easyMap.prototype.resize = function() {
-    // adjust things when the window size changes
-    this.size.width = parseInt(d3.select(this.cssSelector).style('width'));
-    console.log(this.size.width)
+	this.resize = function() {
+	    that.projection
+	        .translate([that.width() / 2, that.height() / 2])
+	        .scale(that.width()*that.scale);
 
-    // update projection
-    this.projection
-        .translate([this.size.width / 2, this.size.height / 2])
-        .scale(this.size.width);
+	    container.style('height', that.height() + 'px');
 
-    // resize the map container
-    d3.select(this.cssSelector)
-        .style('width', this.size.width + 'px')
-        .style('height', this.size.height + 'px');
-
-    // resize the map
-    // d3.select(this.cssSelector).select('.land').attr('d', path);
-    d3.select(this.cssSelector).selectAll('.subunit').attr('d', path);
-}
+	    container.selectAll('.subunit').attr('d', path);
+	    container.selectAll('.subunit-boundary').attr('d', path);
+	}
+	d3.select(window).on('resize', this.resize);
+};
