@@ -7,7 +7,8 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	var container = d3.select(this.cssSelector),
 		svg,
 		that = this,
-		path;
+		path,
+		names = d3.map();
 
 	this.mapRatio = 0.4,
 	this.scale = 0.1;
@@ -27,13 +28,8 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 		}
 	}
 
-	this.changeProjection = function(projection) {
-		path = d3.geo.path()
-			.projection(projection);
-	}
-	this.changeProjection(this.projection);
-
-	var names = d3.map();
+	path = d3.geo.path()
+		.projection(projection);
 
 	function convertToGeoJson(topojsonObject) {
 		return topojson.feature(topojsonObject,topojsonObject.objects.subunits).features;
