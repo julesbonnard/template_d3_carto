@@ -2,7 +2,8 @@
 <meta charset="utf-8">
 
 <head>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="easyMap.css">
+    <link rel="stylesheet" type="text/css" href="lib/colorbrewer.css">
     <style>
     #map1 {
         float: left;
@@ -14,6 +15,11 @@
         width: 50%;
         height: 100%;
     }
+    #map3 {
+        float: left;
+        width: 50%;
+        height: 100%;
+    }
     </style>
 </head>
 
@@ -21,12 +27,13 @@
 
     <div id="map1"></div>
     <div id="map2"></div>
+    <div id="map3"></div>
 
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/queue.v1.min.js"></script>
     <script src="lib/topojson.v1.min.js"></script>
     <script src="lib/d3.geo.projection.min.js"></script>
-    <script src="script.js"></script>
+    <script src="easyMap.js"></script>
     <script>
     var map1 = new easyMap('#map1',d3.geo.kavrayskiy7());
     map1.addMergedSubunits([504,732]);
@@ -37,6 +44,11 @@
     map2.addMergedSubunits([504,732]);
     map2.addMergedSubunits([706,-99]);
     map2.load();
+
+    var map3 = new easyMap('#map3',d3.geo.mercator());
+    map3.addMergedSubunits([504,732]);
+    map3.addMergedSubunits([706,-99]);
+    map3.load();
 
     </script>
 </body>
