@@ -45,7 +45,7 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 
 	function createSubUnits(listSubUnits) {
 		var quantize = d3.scale.quantize()
-		    .domain(d3.extent(data.values(),function(d) {return d[that.property];}))
+		    .domain(d3.extent(data.values(),function(d) {return parseFloat(d[that.property]);}))
 		    .range(d3.range(that.range).map(function(i) { return "q" + i + "-" + that.range; }));
 
 		svg.selectAll('.subunit')
