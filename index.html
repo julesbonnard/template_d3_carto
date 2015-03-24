@@ -20,14 +20,26 @@
         width: 50%;
         height: 100%;
     }
+    #map4 {
+        float: left;
+        width: 50%;
+        height: 100%;
+    }
+    #map5 {
+        float: left;
+        width: 100%;
+        height: 100%;
+    }
     </style>
 </head>
 
 <body>
 
-    <div id="map1"></div>
+<!--     <div id="map1"></div>
     <div id="map2"></div>
     <div id="map3"></div>
+    <div id="map4"></div> -->
+    <div id="map5"></div>
 
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/queue.v1.min.js"></script>
@@ -49,6 +61,19 @@
     map3.addMergedSubunits([504,732]);
     map3.addMergedSubunits([706,-99]);
     map3.load();
+
+    var map4 = new easyMap('#map4',d3.geo.times());
+    map4.addMergedSubunits([504,732]);
+    map4.addMergedSubunits([706,-99]);
+    map4.load();
+
+    var map5 = new easyMap('#map5',d3.geo.azimuthalEqualArea());
+
+    map5.projection = map5.projection.rotate([0, -50]);
+
+    map5.addMergedSubunits([504,732]);
+    map5.addMergedSubunits([706,-99]);
+    map5.load();
 
     </script>
 </body>

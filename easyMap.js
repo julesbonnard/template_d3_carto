@@ -1,11 +1,11 @@
 var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	this.cssSelector = cssSelector || '#map';
-	this.urlTopojson = urlTopojson || 'data/world-110m.json';
+	this.urlTopojson = urlTopojson || 'data/world-50m.json';
 	this.projection = projection || d3.geo.mercator();
-	this.urlNames = urlNames || 'data/world-110m-data.tsv';
-	this.property = 'utilisation_internet';
+	this.urlNames = urlNames || 'data/femmes.tsv';
+	this.property = 'Femmes';
 	this.range = 9;
-	this.colorPalette = 'RdYlGn';
+	this.colorPalette = 'GnBu';
 	
 	var container = d3.select(this.cssSelector),
 		svg,
@@ -13,7 +13,7 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 		path,
 		data = d3.map();
 
-	this.mapRatio = 0.4,
+	this.mapRatio = 0.5,
 	this.scale = 0.1;
 
 	this.width = function() {
@@ -21,7 +21,7 @@ var easyMap = function(cssSelector,projection,urlTopojson,urlNames) {
 	}
 
 	this.height = function() {
-		var svgHeight = parseInt(container.select('svg').style('height'));
+		var svgHeight = parseInt(container.style('height'));
 		var normalHeight = this.width()*this.mapRatio;
 		if(svgHeight>=normalHeight) {
 			return svgHeight;
